@@ -238,15 +238,6 @@ public class Main {
 				logger.error("Wrong argument number for "
 						+ "MSAccess import module: " + importModuleArgs.size());
 			}
-		} else if (importModuleArgs.get(0).equals("MSAccessExp")) {
-			if (importModuleArgs.size() == 2) {
-				importModule = new MsAccessUCanAccessImportModule(new File(
-						importModuleArgs.get(1)));
-			} else {
-				logger.error("Wrong argument number for "
-						+ "MSAccessExp import module: " 
-						+ importModuleArgs.size());
-			}
 //		} else if (importModuleArgs.get(0).equals("ODBC")) {
 //			if (importModuleArgs.size() == 2) {
 //				importModule = new ODBCImportModule(importModuleArgs.get(1));
