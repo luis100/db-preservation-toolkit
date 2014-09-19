@@ -249,7 +249,8 @@ public class Main {
 						+ "MSAccessExp import module: "
 						+ importModuleArgs.size());
 			}
-			//		} else if (importModuleArgs.get(0).equals("ODBC")) {
+//		} else if (importModuleArgs.get(0).equals("ODBC")) {
+
 //			if (importModuleArgs.size() == 2) {
 //				importModule = new ODBCImportModule(importModuleArgs.get(1));
 //			} else if (importModuleArgs.size() == 4) {
