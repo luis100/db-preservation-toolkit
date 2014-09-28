@@ -8,4 +8,5 @@ target/
 src/test/
 
 lib/
-**/MsAccessUCanAccessImportModule.java
+exported-dbs/
+log/
