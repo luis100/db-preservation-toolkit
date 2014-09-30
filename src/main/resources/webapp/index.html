@@ -22,7 +22,7 @@
 
   <body>
 
-    <div ng-controller="TableCtrl" id="wrapper">
+    <div id="wrapper">
 
       <nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
@@ -39,7 +39,8 @@
         <!-- /.navbar-top-links -->
 
         <div class="navbar-default navbar-static-side" role="navigation">
-          <div class="sidebar-collapse">
+          <div ng-controller="SidebarController as sidebar" class="sidebar-collapse">
+            <p><a href="#" ng-click="sidebar.expClick('public.myTable')">Show 'myTable'</a></p>
             <ul class="nav" id="side-menu">
               <li class="sidebar-search">
                 <div class="input-group custom-search-form">
@@ -55,7 +56,8 @@
               <li>
                 <a href="#"><i class="fa fa-folder-open fa-fw"></i>Schemas<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
-                  <li ng-repeat="(schemaName, schemaDef) in schemas">
+                  <!-- <li ng-repeat="(schemaName, schemaDef) in sidebar.schemas"> -->
+                  <li>
                     <a href="#"><i class="fa fa-folder-open fa-fw"></i>{{schemaName}}<span class="fa arrow"></span></a>
                     
                     <ul class="nav nav-third-level">
@@ -64,16 +66,24 @@
                         <a href="#"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
                         <ul class="nav nav-fourth-level">
                           
-                          <li ng-repeat="(tableName, tableDef) in schemaDef.tables">
-                            <a ng-click="showTable(tableDef.id)" href="#"><i class="fa fa-list fa-fw"></i>{{tableName}}<span class="fa arrow"></a>
+                         <!--  <li ng-repeat="(tableName, tableDef) in schemaDef.tables">
+                            <a ng-click="sidebar.selectTable(tableDef.id)" href="#"><i class="fa fa-list fa-fw"></i>{{tableName}}<span class="fa arrow"></a> -->
                             <!-- <ul class="nav nav-fifth-level">
                               <li>
                                 <a href="#">Triggers</a>
                               </li>
                             </ul> -->
+                          
+                          <!-- </li> -->
+
+                          <li ng-class="{active: sidebar.isSelected('public.data_types')}">
+                            <a href="#" ng-click="sidebar.selectTable('public.data_types')" >data_types</a>
+                          </li>
+                          <li ng-class="{active: sidebar.isSelected('public.myTable')}">
+                            <a href="#" ng-click="sidebar.selectTable('public.myTable')" >myTable</a>
                           </li>
                         </ul>
-                      </li>
+                    </li>
 
                       <li>
                         <a href="#"><i class="fa fa-eye fa-fw"></i>Views<span class="fa arrow"></span></a>
@@ -122,6 +132,8 @@
                 <a href="#"><i class="fa fa-unlock-alt fa-fw"></i> Privileges</a>
               </li>
             </ul>
+            SIDEBAR printing:
+            {{sidebar.status.nRows}}
             <!-- /#side-menu -->
           </div>
           <!-- /.sidebar-collapse -->
@@ -139,16 +151,16 @@
         <!-- /.row -->
         <div class="row">
           <div class="col-lg-12">
-            <div class="panel panel-default">
+            <div ng-controller="TablePanelController as tPanel" class="panel panel-default">
               <div class="panel-heading">
                 <div class="row">
                   <div class="col-md-6">
-                    {{tableId}} ({{numFound}})
-                    <select ng-model="rows" name="display-nrows" id="row-select" ng-options="number for number in rowNumbers"></select>
-                    <!-- <input ng-model="rows" type="text"> -->
+                    {{tPanel.table.id}} ({{tPanel.table.numFound}})
+                    <select ng-model="tPanel.nRows" ng-change="tPanel.updateNRows(tPanel.nRows)" name="display-nrows" id="row-select" ng-options="number for number in tPanel.numberRows"></select>
+                    <p>{{tPanel.nRows}}</p>
                   </div>
                   <div class="input-group">
-                    <input ng-model="querySearch" ng-change="searchTable(tableId)" type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
+                    <input ng-model="tPanel.searchQuery" ng-change="tPanel.searchTable()" type="text" class="form-control" placeholder="Search" name="srch-term" id="srch-term">
                     <div class="input-group-btn">
                       <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
                     </div>
@@ -160,8 +172,9 @@
                   <table class="table table-striped table-bordered table-hover" id="main-table">
                     <thead>
                       <tr>
-                        <th ng-repeat="colName in tableCols">
+                        <th ng-repeat="colName in tPanel.table.columns">
                           <a href ng-click="$parent.orderByField = 'col-' + ($index+1); sortRows(tableId, 0, 10, $index+1)">
+                          <a href="#">
                             {{colName}}
                             <span ng-show="orderByField == 'col-' + ($index+1)">
                               <span class="order dropup"><span ng-show="$parent.sortASC" class="caret"></span></span>
@@ -171,11 +184,11 @@
                         </th>
                       </tr>
                       <tr>
-                        <td ng-repeat="colType in tableColsType track by $index">({{colType}})</td>
+                        <td ng-repeat="colType in tPanel.table.columnsType track by $index">({{colType}})</td>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr ng-repeat="row in tableRows | filter:query ">
+                      <tr ng-repeat="row in tPanel.table.rows | filter:query ">
                         <td ng-repeat="(key, value) in row track by $index">
                           {{value}}
                         </td>
@@ -183,12 +196,12 @@
                     </tbody>
                   </table>
 
-                  <div ng-controller="PaginationCtrl">
+                  <!-- <div ng-controller="PaginationController as pag"> -->
 <!--                     <div>Showing {{parseInt(start + 1)}} to {{parseInt(start + rows)}} of {{numFound}} entries</div>
- -->                    <div>
+ -->                  <!--   <div>
                       <pagination total-items="totalItems" ng-model="currentPage" max-size="maxSize" class="pagination" boundary-links="true" num-pages="numPages"></pagination>
                     </div>
-                  </div>
+                  </div> -->
 
                 </div>
               </div>
