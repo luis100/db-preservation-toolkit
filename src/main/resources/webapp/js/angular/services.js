@@ -47,6 +47,7 @@
     function(Solr, Utils) {
 
       // change to be configurable
+      
       var metaPrefix = 'dbpres_meta_';
       var dataPrefix = 'dbpres_data_';
       var metaFields = {
@@ -76,13 +77,30 @@
         searchTerm: ""
       };
 
+      this.getMetaPrefix = function() {
+        return metaPrefix;
+      };
+
+      this.getDataPrefix = function() {
+        return dataPrefix;
+      };
+
+      this.getMetaFields = function() {
+        return metaFields;
+      };
+
       this.getTableState = function() {
         return state;
       };
 
-      this.setNumberRows = function(nRows) {
-        state.nRows = nRows;
-        this.search(currentTable.id, state.searchTerm);
+      this.updateState = function(auxState) {
+        if (auxState.startRow !== undefined)   { state.startRow = auxState.startRow; }
+        if (auxState.nRows !== undefined)      { state.nRows = auxState.nRows; }
+        if (auxState.sortField !== undefined)  { state.sortField = auxState.sortField; }
+        if (auxState.sortOrder !== undefined)  { state.sortOrder = auxState.sortOrder; }
+        if (auxState.searchTerm !== undefined) { state.searchTerm = auxState.searchTerm; }
+
+        this.search(currentTable.id);
       };
 
       this.getCurrentTable = function() {
@@ -100,29 +118,20 @@
           currentTable.columnsType = columnsType;
         });
 
+        resetState();
         this.search(tableId, "");
       };
 
-
-      // update usa getTableRows que dá linhas 2º um critério (útil quando o update é usado no setCurrentTable)
-      // mas quando se faz uma pesquisa/filtro o update vai user getTableRows não preservando as linhas de uma dada pesquisa
-      this.update = function() {
-        var table = currentTable;
-        var tableId = table.id;
-      };
-
-      var resetStatus = function() {
-        status.startRow = 0;
-        status.nRows = 10;
-        status.sortField = metaFields.rowN;
-        status.sortOrder = "ASC";
-      };
-
-
       this.search = function(tableId, searchQuery) {
-        state.searchTerm = searchQuery;
         console.log(searchQuery);
         console.log(tableId);
+        console.log("state search term: ", state.searchTerm);
+        if (searchQuery !== undefined) {
+          state.searchTerm = searchQuery;
+        } else {
+          searchQuery = state.searchTerm;
+        }
+        
         var query = metaFields.tableId + ':' + tableId;
 
         if (searchQuery !== "") {
@@ -140,7 +149,16 @@
         getTableRows(params, function(data) {
           currentTable.rows = data.rows;
           currentTable.numFound = data.numFound;
+          currentTable.promise = data.promise;
         });
+      };
+
+      var resetState = function() {
+        state.startRow = 0;
+        state.nRows = 10;
+        state.sortField = metaFields.rowN;
+        state.sortOrder = "ASC";
+        state.searchTerm = "";
       };
 
       var getTableRows = function(params, callback) {
@@ -152,6 +170,7 @@
           var result = {
             rows: rows,
             numFound: data.response.numFound,
+            promise: data.$promise
           };
           callback(result);
         });
@@ -196,66 +215,56 @@
         };
         requestColumnMeta(params, metaFields.columnsType, callback, args);
       };
-
-      // var getTableRows2 = function(tableId, from, to, sortField, sortOrder, callback) {
-      //   var params = {
-      //     q: metaFields.tableId + ':' + tableId,
-      //     fl: dataPrefix + '*',
-      //     start: from,
-      //     rows: to,
-      //     sort: sortField + ' ' + sortOrder
-      //   };
-
-      //   getTableRows(params, callback);
-      // };
-
-      // var getTableNumberRows = function(tableId, callback) {
-      //   var params = {
-      //     q: metaFields.tableId + ':' + tableId,
-      //   };
-      //   Solr.query(params, function(data) {
-      //     console.log(data);
-      //     callback(data.response.numFound);
-      //   });
-      // };
-
-      // $scope.sortRows = function(tableId, start, offSet, colN) {
-      //   if ($scope.currentCol !== $scope.orderByField) {
-      //     $scope.currentCol = $scope.orderByField;
-      //   } else {
-      //     $scope.sortASC = !$scope.sortASC;
-      //   }
-
-      //   if ($scope.sortASC) {
-      //     $scope.order = "ASC";
-      //   } else {
-      //     $scope.order = "DESC";
-      //   }
-
-      //   tableService.getTableRows(tableId, $scope.start, $scope.rows, dataPrefix + colN, $scope.order, function(rows) {
-      //     $scope.tableRows = rows;
-      //   });
-      // };
-
     }
   ]);
 
-  dbpresServices.service('SchemaMeta', ['Solr',
-    function(Solr) {
+  dbpresServices.service('Sidebar', ['Solr', 'Utils', 'Tables',
+    function(Solr, Utils, Tables) {
 
-      // getSchemasMeta(function(schemasNames) {
-      //   for (var key in schemasNames) {
-      //     var schemaName = schemasNames[key];
-      //     $scope.schemas[schemaName] = {};
-      //     tableService.getTablesMeta(schemaName, handleTables, [schemaName]);
-      //   }
-      //   getRandomTableId($scope.schemas);
-      //   $scope.$watch('tableId', function(o, n) {
-      //     if (o != n) {
-      //       $scope.showTable($scope.tableId);
-      //     }
-      //   }, true);
-      // });
+      // TODO change to Solr
+      var metaPrefix = 'dbpres_meta_';
+      var dataPrefix = 'dbpres_data_';
+      var metaFields = {
+        id: metaPrefix + 'id',
+        tableId: metaPrefix + 'tableId',
+        table: metaPrefix + 'table',
+        schema: metaPrefix + 'schema',
+        rowN: metaPrefix + 'rowN',
+        columns: metaPrefix + 'col_',
+        columnsType: metaPrefix + 'colType_'
+        // complete..
+      };
+
+      var sidebar = {};
+
+      this.getSidebar = function() {
+        if (Utils.objectSize(sidebar) === 0) {
+          this.initSidebar();
+        }
+        return sidebar;
+      };
+
+      this.initSidebar = function() {
+        sidebar.schemas = {};
+        getSchemasMeta(function(schemasNames) {
+          for (var key in schemasNames) {
+            var schemaName = schemasNames[key];
+            sidebar.schemas[schemaName] = {};
+            getTablesMeta(schemaName, handleTables, [schemaName]);
+          }
+          var tableId = getRandomTableId(sidebar.schemas);
+          console.log("tab,id", tableId);
+          Tables.setCurrentTable(tableId);
+
+        });
+
+        sidebar.users = {};
+        // getUsersMeta
+        sidebar.roles = {};
+        // getRolesMeta
+        sidebar.privileges = {};
+        // getPrivilegesMeta
+      };
 
       var getSchemasMeta = function(callback) {
         var params = {
@@ -303,17 +312,17 @@
       };
 
       var handleColumns = function(columns, schemaName, tableName) {
-        var tables = $scope.schemas[schemaName].tables;
+        var tables = sidebar.schemas[schemaName].tables;
         tables[tableName].columns = columns;
       };
 
       var handleColumnsType = function(columnsType, schemaName, tableName) {
-        var tables = $scope.schemas[schemaName].tables;
+        var tables = sidebar.schemas[schemaName].tables;
         tables[tableName].columnsType = columnsType;
       };
 
       var handleTables = function(tables, schemaName) {
-        var schemas = $scope.schemas;
+        var schemas = sidebar.schemas;
         schemas[schemaName].tables = {};
         for (var key in tables) {
           var tableName = tables[key];
@@ -325,24 +334,40 @@
         }
       };
 
-      // var getRandomTableId = function(schemas) {
-      //   var randomTableId = '';
-      //   $scope.$watch('schemas', function(newSchemas, oldSchemas) {
-      //     if (newSchemas != oldSchemas) {
-      //       for (var firstSchema in newSchemas) {
-      //         var randFirstSchema = newSchemas[firstSchema];
-      //         var randFirstSchemaName = firstSchema;
-      //         for (var firstTable in randFirstSchema.tables) {
-      //           var randFirstTableName = firstTable;
-      //           randomTableId = randFirstSchemaName + '.' + randFirstTableName;
-      //           break;
-      //         }
-      //         break;
-      //       }
-      //     }
-      //     $scope.tableId = randomTableId;
-      //   }, true);
-      // };
+      // TODO: 
+      var getRandomTableId = function(schemas) {
+        var randomTableId = 'und';
+        var randFirstSchema = {};
+        var randFirstSchemaName = '';
+        console.log("schemas: ", schemas);
+        // $scope.$watch('schemas', function(newSchemas, oldSchemas) {
+          // if (newSchemas != oldSchemas) {
+            for (var firstSchema in schemas) {
+              console.log("first: ", firstSchema);
+              randFirstSchema = schemas[firstSchema];
+
+              console.log("sss", randFirstSchema);
+              randFirstSchemaName = firstSchema;
+              break;
+            }
+
+
+            console.log("!!!!", schemas[randFirstSchemaName]);
+            //   console.log("randFirst", firstSchema);
+              for (var firstTable in randFirstSchema.tables) {
+                var randFirstTableName = firstTable;
+                console.log("hre:", randFirstTableName);
+                randomTableId = randFirstSchemaName + '.' + randFirstTableName;
+                console.log("randomID", randomTableId);
+                break;
+              }
+            //   break;
+            // }
+          // }
+        // }, true);
+        return randomTableId;
+      };
+
     }
   ]);
 
@@ -368,6 +393,5 @@
 
     }
   ]);
-
 
 })();
