@@ -7,36 +7,29 @@
   var dbpresServices = angular.module('dbpresServices', ['ngResource']);
 
   // TODO: add config
-  dbpresServices.service('Solr', ['$resource',
-    function($resource) {
-      var port = '8983';
-      var dbName = 'collection1';
-      var url = 'http://localhost:' + port + '/solr/' + dbName + '/select';
+  dbpresServices.service('Solr', ['$resource', '$q',
+    function($resource, $q) {
+      var URL_SOLR = "http://localhost:8983/solr/collection1";
+      this.QUERY = "query";
+      this.FACET = "facet";
+      this.COLUMN_META = "columnMeta";
 
-      return $resource(url, {
-        wt: 'json',
-        'json.wrf': 'JSON_CALLBACK',
-      }, {
-        query: {
-          method: 'JSONP',
-        },
-        facet: {
-          method: 'JSONP',
-          params: {
-            q: "*:*",
-            facet: true,
-            start: 0,
-            rows: 0
-          }
-        },
-        columnMeta: {
-          method: 'JSONP',
-          params: {
-            start: 0,
-            rows: 1
-          }
-        }
-      });
+      this.getData = function(action, params) {
+        var resource = $resource(URL_SOLR + '/select', { wt: 'json', 'json.wrf': 'JSON_CALLBACK'}, {
+          query: { method: 'JSONP' },
+          facet: { method: 'JSONP', params: { q: "*:*", facet: true, start: 0, rows: 0 }},
+          columnMeta: { method: 'JSONP', params: { start: 0, rows: 1 }}
+        });
+
+        var deferred = $q.defer();
+        resource[action](params, function(data) {
+          deferred.resolve(data);
+        }, function(error) {
+          deferred.reject(error);
+        });
+
+        return deferred.promise;
+      };
     }
   ]);
 
@@ -72,7 +65,7 @@
       var state = {
         startRow: 0,
         nRows: 10,
-        sortField: metaFields.rowN,
+        sortField: dataPrefix + "1",
         sortOrder: "ASC",
         searchTerm: ""
       };
@@ -110,16 +103,16 @@
       this.setCurrentTable = function(tableId) {
         currentTable.id = tableId;
         
-        getColumnsMeta(tableId, function(columns) {
+        getColumnsMeta(tableId).then(function(columns) {
           currentTable.columns = columns;
         });
 
-        getColumnsTypeMeta(tableId, function(columnsType) {
+        getColumnsTypeMeta(tableId).then(function(columnsType) {
           currentTable.columnsType = columnsType;
         });
 
         resetState();
-        this.search(tableId, "");
+        this.search(tableId);
       };
 
       this.search = function(tableId, searchQuery) {
@@ -138,6 +131,7 @@
           query += ' AND ' + '*' + searchQuery + '*';
         }
 
+        console.log("search init", state.sortField);
         var params = {
           q: query,
           fl: dataPrefix + '*',
@@ -146,47 +140,42 @@
           sort: state.sortField + ' ' + state.sortOrder
         };
 
-        getTableRows(params, function(data) {
+        getTableRows(params).then(function(data) {
           currentTable.rows = data.rows;
           currentTable.numFound = data.numFound;
-          currentTable.promise = data.promise;
+        }, function(error) {
+          console.error("ERROR getting table rows");
         });
       };
 
       var resetState = function() {
         state.startRow = 0;
         state.nRows = 10;
-        state.sortField = metaFields.rowN;
+        state.sortField = dataPrefix + "1";
         state.sortOrder = "ASC";
         state.searchTerm = "";
       };
 
       var getTableRows = function(params, callback) {
-        Solr.query(params, function(data) {
+        return Solr.getData(Solr.QUERY, params).then(function(data) {
           var rows = data.response.docs.map(function(row) {
             return sortRowByN(row, dataPrefix);
           });
-          console.log(rows);
-          var result = {
+
+          return {
             rows: rows,
-            numFound: data.response.numFound,
-            promise: data.$promise
+            numFound: data.response.numFound
           };
-          callback(result);
+        }, function(error){
+          console.error("ERROR getting table rows");
         });
       };
 
-      var requestColumnMeta = function(params, prefix, callback, args) {
-        Solr.columnMeta(params, function(data) {
-          var newArgs = [];
-          var orderedColMeta = sortRowByN(data.response.docs[0], prefix);
-          newArgs.push(orderedColMeta);
-          if (args) {
-            for (var key in args) {
-              newArgs.push(args[key]);
-            }
-          }
-          callback.apply(this, newArgs);
+      var requestColumnMeta = function(params, prefix) {
+        return Solr.getData(Solr.COLUMN_META, params).then(function(data) {
+          return sortRowByN(data.response.docs[0], prefix);
+        }, function(error) {
+          console.error("ERROR getting columns meta");
         });
       };
 
@@ -205,7 +194,7 @@
           fl: metaFields.columns + '*',
           q: metaFields.tableId + ':' + columnsTableId
         };
-        requestColumnMeta(params, metaFields.columns, callback, args);
+        return requestColumnMeta(params, metaFields.columns);
       };
 
       var getColumnsTypeMeta = function(columnsTableId, callback, args) {
@@ -213,7 +202,7 @@
           fl: metaFields.columnsType + '*',
           q: metaFields.tableId + ':' + columnsTableId
         };
-        requestColumnMeta(params, metaFields.columnsType, callback, args);
+        return requestColumnMeta(params, metaFields.columnsType);
       };
     }
   ]);
@@ -236,7 +225,6 @@
       };
 
       var sidebar = {};
-
       this.getSidebar = function() {
         if (Utils.objectSize(sidebar) === 0) {
           this.initSidebar();
@@ -245,32 +233,56 @@
       };
 
       this.initSidebar = function() {
-        sidebar.schemas = {};
-        getSchemasMeta(function(schemasNames) {
-          for (var key in schemasNames) {
-            var schemaName = schemasNames[key];
-            sidebar.schemas[schemaName] = {};
-            getTablesMeta(schemaName, handleTables, [schemaName]);
-          }
-          var tableId = getRandomTableId(sidebar.schemas);
-          console.log("tab,id", tableId);
-          Tables.setCurrentTable(tableId);
-
-        });
-
+        sidebar.schemas = createSchemasStruct();
         sidebar.users = {};
-        // getUsersMeta
         sidebar.roles = {};
-        // getRolesMeta
         sidebar.privileges = {};
-        // getPrivilegesMeta
       };
 
-      var getSchemasMeta = function(callback) {
+      var createSchemasStruct = function() {
+        var schemas = {};
+        getSchemasMeta().then(function(schemasNames) {
+          for (var key in schemasNames) {
+            var schemaName = schemasNames[key];
+            schemas[schemaName] = createSchemaStruct(schemaName);
+          }
+        });
+        return schemas;
+      };
+
+      var createSchemaStruct = function(schemaName) {
+        var schema = {};
+        schema.tables = createTablesStruct(schemaName);
+        schema.views = createViewsStruct(schemaName);
+        return schema;
+      };
+
+      var createTablesStruct = function(schemaName) {
+        var tables = {};
+        getTablesMeta().then(function(tablesNames) {
+          for (var key in tablesNames) {
+            var tableName = tablesNames[key];
+            tables[tableName] = { id: schemaName + "." + tableName };
+          }
+        },
+        function(error) {
+          console.error("Error getting tables names");
+        });
+        return tables;
+      };
+
+      var createViewsStruct = function(schemaName) {
+        return {
+          view1: {},
+          view2: {}
+        };
+      };
+
+      var getSchemasMeta = function() {
         var params = {
           'facet.field': metaFields.schema
         };
-        requestFacet(params, callback);
+        return requestFacet(params);
       };
 
       var getTablesMeta = function(tableSchema, callback, args) {
@@ -279,21 +291,14 @@
           'facet.field': metaFields.table,
           q: metaFields.schema + ':' + tableSchema
         };
-        requestFacet(params, callback, args);
+        return requestFacet(params);
       };
 
       var requestFacet = function(params, callback, args) {
-        Solr.facet(params, function(data) {
-          var processedFacets = processFacetFields(data, params['facet.field']);
-          var newArgs = [];
-
-          newArgs.push(processedFacets);
-          if (args) {
-            for (var key in args) {
-              newArgs.push(args[key]);
-            }
-          }
-          callback.apply(this, newArgs);
+        return Solr.getData(Solr.FACET, params).then(function(data) {
+          return processFacetFields(data, params['facet.field']);
+        }, function (error) {
+          console.error("ERROR: couldn't get facet fields");
         });
       };
 
@@ -311,63 +316,32 @@
         return processedResponse;
       };
 
-      var handleColumns = function(columns, schemaName, tableName) {
-        var tables = sidebar.schemas[schemaName].tables;
-        tables[tableName].columns = columns;
-      };
-
-      var handleColumnsType = function(columnsType, schemaName, tableName) {
-        var tables = sidebar.schemas[schemaName].tables;
-        tables[tableName].columnsType = columnsType;
-      };
-
-      var handleTables = function(tables, schemaName) {
-        var schemas = sidebar.schemas;
-        schemas[schemaName].tables = {};
-        for (var key in tables) {
-          var tableName = tables[key];
-          var tableId = schemaName + "." + tableName;
-          var table = schemas[schemaName].tables[tableName] = {};
-          table.id = tableId;
-          // getColumnsMeta(tableId, handleColumns, [schemaName, tableName]);
-          // getColumnsTypeMeta(tableId, handleColumnsType, [schemaName, tableName]);
-        }
-      };
-
-      // TODO: 
-      var getRandomTableId = function(schemas) {
+      this.getRandomTableId = function(schemas) {
         var randomTableId = 'und';
         var randFirstSchema = {};
         var randFirstSchemaName = '';
         console.log("schemas: ", schemas);
-        // $scope.$watch('schemas', function(newSchemas, oldSchemas) {
-          // if (newSchemas != oldSchemas) {
-            for (var firstSchema in schemas) {
-              console.log("first: ", firstSchema);
-              randFirstSchema = schemas[firstSchema];
+        
+        for (var firstSchema in schemas) {
+          console.log("first: ", firstSchema);
+          randFirstSchema = schemas[firstSchema];
 
-              console.log("sss", randFirstSchema);
-              randFirstSchemaName = firstSchema;
-              break;
-            }
+          console.log("sss", randFirstSchema);
+          randFirstSchemaName = firstSchema;
+          break;
+        }
 
-
-            console.log("!!!!", schemas[randFirstSchemaName]);
-            //   console.log("randFirst", firstSchema);
-              for (var firstTable in randFirstSchema.tables) {
-                var randFirstTableName = firstTable;
-                console.log("hre:", randFirstTableName);
-                randomTableId = randFirstSchemaName + '.' + randFirstTableName;
-                console.log("randomID", randomTableId);
-                break;
-              }
-            //   break;
-            // }
-          // }
-        // }, true);
+        console.log("!!!!", schemas[randFirstSchemaName]);
+        //   console.log("randFirst", firstSchema);
+        for (var firstTable in randFirstSchema.tables) {
+          var randFirstTableName = firstTable;
+          console.log("hre:", randFirstTableName);
+          randomTableId = randFirstSchemaName + '.' + randFirstTableName;
+          console.log("randomID", randomTableId);
+          break;
+        }
         return randomTableId;
       };
-
     }
   ]);
 
