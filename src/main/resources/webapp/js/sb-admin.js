@@ -1,9 +1,3 @@
-$(function() {
-
-    $('#side-menu').metisMenu();
-
-});
-
 //Loads the correct sidebar on window load,
 //collapses the sidebar on window resize.
 $(function() {
@@ -15,4 +9,9 @@ $(function() {
             $('div.sidebar-collapse').removeClass('collapse');
         }
     });
+});
+
+$(function() {
+    // $('#side-menu').removeData("plugin_metisMenu");
+    // $('#side-menu').metisMenu();
 });

@@ -13,6 +13,7 @@
     "angular-resource": "~1.2.x"
   },
   "resolutions": {
-    "jquery": ">=1.11.0"
+    "jquery": ">=1.11.0",
+    "bootstrap": "~3.3.0"
   }
 }

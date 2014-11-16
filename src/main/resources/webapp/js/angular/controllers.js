@@ -24,24 +24,23 @@
       };
 
       this.searchTable = function() {
-        Tables.search(this.table.id, this.searchQuery);
+        Tables.search(this.table.id, this.state.searchTerm);
       };
 
-      var currentCol = "col-und1";
+      var currentCol = "col-1";
       this.sortRows = function(columnN) {
-        var order = "DESC";
 
-        this.sortASC = true;
+        if (this.sortASC === undefined) {
+          this.sortASC = true;
+        }
+        
         if (currentCol !== this.state.sortField) {
           currentCol = this.state.sortField;
         } else {
           this.sortASC = !this.sortASC;
         }
 
-        if (this.sortASC) {
-          order = "ASC";
-        }
-
+        var order = this.sortASC ? "ASC" : "DESC";
         var state = {
           startRow: 0,
           sortField: this.dataPrefix + columnN,
@@ -68,7 +67,7 @@
         Tables.updateState(state);
       };
 
-      // watch if nRows changes. i.e: nRows selector changes
+      // watch if nRows, searchTerm or sortField changes.
       $scope.$watch(angular.bind(this, function() {
         return this.state.nRows + this.state.searchTerm + this.state.sortField;
       }), angular.bind(this, function(newVal, oldVal) {
@@ -79,18 +78,31 @@
     }
   ]);
 
-  dbpresControllers.controller('SidebarPanelController', ['$scope', 'Tables', 'Sidebar',
-    function($scope, Tables, Sidebar) {
+  dbpresControllers.controller('SidebarPanelController', ['Tables', 'Sidebar', '$scope',
+    function(Tables, Sidebar, $scope) {
       this.sidebar = Sidebar.getSidebar();
       
       this.selectTable = function(tableId) {
         Tables.setCurrentTable(tableId);
+        this.table = Tables.getCurrentTable(tableId);
         this.selected = Tables.getCurrentTable().id;
       };
 
       this.isSelected = function(tableId) {
         return this.selected === tableId;
       };
+
+      // when sidebar structure changes: 
+      // - metisMenus is refreshed;
+      // - default table is updated;
+      $scope.$watch(angular.bind(this, function() {
+        return this.sidebar;
+      }), angular.bind(this, function(newVal, oldVal) {
+        $('#side-menu').metisMenu();
+      
+        var randomId = Sidebar.getRandomTableId(this.sidebar.schemas);
+        this.table = Tables.setCurrentTable(randomId);
+      }), true);
     }
   ]);
 
