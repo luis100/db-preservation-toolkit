@@ -7,11 +7,5 @@ target/
 **/.DS_Store
 src/test/
 
-<<<<<<< HEAD
 log/
 exported-dbs/
-=======
-lib/
-exported-dbs/
-log/
->>>>>>> checkpoint

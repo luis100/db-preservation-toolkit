@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html ng-app="dbpresApp">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Database Preservation Toolkit</title>
+
+  <!-- Core CSS - Include with every page -->
+  <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="bower_components/metisMenu/dist/metisMenu.css">
+  <link href="fonts/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+  <!-- Page-Level Plugin CSS - Tables -->
+  <link href="css/plugins/dataTables/dataTables.bootstrap.css" rel="stylesheet">
+
+  <!-- SB Admin CSS - Include with every page -->
+  <link href="css/sb-admin.css" rel="stylesheet">
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="margin-bottom: 0">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Database Preservation Toolkit</a>
+      </div>
+      <!-- /.navbar-header -->
+
+      <!-- /.navbar-top-links -->
+
+      <div class="navbar-default navbar-static-side" role="navigation">
+        <div ng-controller="SidebarPanelController as sPanel" class="sidebar-collapse">
+          <ul class="nav" id="side-menu">
+            
+            <li class="sidebar-search">
+              <div class="input-group custom-search-form">
+                <input type="text" class="form-control" placeholder="Search...">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </span>
+              </div>
+              <!-- /input-group -->
+            </li>
+
+            <li>
+              <a href="#/explore"><i class="fa fa-folder-open fa-fw"></i>Schemas<span class="fa arrow"></span></a>
+              <ul class="nav nav-second-level">
+                <li ng-repeat="(schemaName, schemaDef) in sPanel.sidebar.schemas">
+                  <a href="#/explore"><i class="fa fa-folder-open fa-fw"></i>{{schemaName}}<span class="fa arrow"></span></a>
+                  <ul>
+                    
+                    <li>
+                      <a href="#/explore"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
+                      <ul>
+                        <li ng-repeat="(tableName, tableDef) in schemaDef.tables">
+                          <a ng-click="sPanel.selectTable(tableDef.id)" href="#/explore">
+                            <i class="fa fa-list fa-fw"></i>{{tableName}}<span class="fa arrow">
+                          </a>
+                          <!-- <ul class="nav nav-fifth-level">
+                            <li>
+                              <a href="#/explore">Triggers</a>
+                            </li>
+                            <li>
+                              <a href="#/explore">Bar</a>
+                            </li>
+                          </ul> -->
+                        </li>
+                      </ul>
+                    </li> <!-- /tables -->
+
+                    <li>
+                      <a href="#/explore"><i class="fa fa-eye fa-fw"></i>Views<span class="fa arrow"></span></a>
+                      <ul class="nav nav-third-level">
+                        <li>
+                          <a href="#/explore"><i class="fa fa-column fa-fw"></i>Columns <span class="fa arrow"></span></a>
+                          <ul class="nav nav-fourth-level">
+                            <li>
+                              <a href="#/explore">Column 1</a>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li> <!-- /views -->
+                    
+                    <li>
+                      <a href="#/explore"><i class="fa fa-gears fa-fw"></i>Routines<span class="fa arrow"></span></a>
+                      <ul class="nav nav-third-level">
+                        <li>
+                          <a href="">Columns <span class="fa arrow"></span></a>
+                          <ul class="nav nav-fourth-level">
+                            <li>
+                              <a href="#">Column 1</a>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li> <!-- /routines -->
+
+                  </ul> <!-- schema -->
+                </li>
+              </ul>
+            </li> <!-- /schemas -->
+
+            <li>
+              <a href="#/explore"><i class="fa fa-users fa-fw"></i> Users</a>
+              <ul>
+                <li><a href="#">Foor</a></li>
+                <li><a href="#">Bar</a></li>
+              </ul>
+            </li> <!-- /users -->
+
+            <li>
+              <a href="#/explore"><i class="fa fa-files-o fa-fw"></i> Roles</a>
+            </li> <!-- /roles -->
+            
+            <li>
+              <a href="#/explore"><i class="fa fa-unlock-alt fa-fw"></i> Privileges</a>
+            </li> <!-- /privileges -->
+
+          </ul>
+          <!-- /#side-menu -->
+        </div>
+        <!-- /.sidebar-collapse -->
+      </div>
+      <!-- /.navbar-static-side -->
+    </nav>
+
+    <div id="page-wrapper">
+      <div ng-view></div>
+    </div>
+    <!-- /#page-wrapper -->
+  </div>
+  <!-- /#wrapper -->
+
+
+
+  <!-- Core Scripts - Include with every page -->
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <script src="bower_components/metisMenu/dist/metisMenu.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-resource/angular-resource.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/spin/spin.min.js"></script>
+
+  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <!-- // <script src="js/lib/d3.js"></script> -->
+
+  <script src="js/angular/app.js"></script>
+  <script src="js/angular/controllers.js"></script>
+  <script src="js/angular/services.js"></script>
+
+  <!-- SB Admin Scripts - Include with every page -->
+  <script src="js/sb-admin.js"></script>
+  <script src="js/spinner.js"></script>
+
+  <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+  <script>
+    // $(document).ready(function() {
+    //   $('#dataTables-example').dataTable();
+    // });
+  </script>
+
+</body>
+
+</html>
