@@ -18,7 +18,7 @@ import pt.gov.dgarq.roda.common.convert.db.modules.db2.in.DB2JDBCImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.db2.out.DB2JDBCExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.dbml.in.DBMLImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.dbml.out.DBMLExportModule;
-import pt.gov.dgarq.roda.common.convert.db.modules.msAccess.in.MsAccessUCanAccessImportModule;
+import pt.gov.dgarq.roda.common.convert.db.modules.msAccess.in.MsAccessImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.in.MySQLJDBCImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.out.MySQLJDBCExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.out.PhpMyAdminExportModule;
@@ -232,25 +232,15 @@ public class Main {
 						+ "Oracle12c import module: "
 						+ importModuleArgs.size());
 			}
-//		} else if (importModuleArgs.get(0).equals("MSAccess")) {
-//			if (importModuleArgs.size() == 2) {
-//				importModule = new MsAccessImportModule(new File(
-//						importModuleArgs.get(1)));
-//			} else {
-//				logger.error("Wrong argument number for "
-//						+ "MSAccess import module: " + importModuleArgs.size());
-//			}
-		} else if (importModuleArgs.get(0).equals("MSAccessUCanAccess")) {
+		} else if (importModuleArgs.get(0).equals("MSAccess")) {
 			if (importModuleArgs.size() == 2) {
-				importModule = new MsAccessUCanAccessImportModule(new File(
+				importModule = new MsAccessImportModule(new File(
 						importModuleArgs.get(1)));
 			} else {
 				logger.error("Wrong argument number for "
-						+ "MSAccessExp import module: "
-						+ importModuleArgs.size());
+						+ "MSAccess import module: " + importModuleArgs.size());
 			}
 //		} else if (importModuleArgs.get(0).equals("ODBC")) {
-
 //			if (importModuleArgs.size() == 2) {
 //				importModule = new ODBCImportModule(importModuleArgs.get(1));
 //			} else if (importModuleArgs.size() == 4) {
