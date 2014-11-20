@@ -1,0 +1,93 @@
+<div ng-controller="SidebarController as sPanel" class="sidebar-collapse">
+  <ul class="nav" id="side-menu" my-metismenu my-sticky-bar>
+
+    <!--
+    <li class="sidebar-search">
+      <div class="input-group custom-search-form">
+        <input type="text" class="form-control" placeholder="Search...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">
+            <i class="fa fa-search"></i>
+          </button>
+        </span>
+      </div>
+    </li> -->
+
+    <li>
+      <a href="#/explore"><i class="fa fa-folder-open fa-fw"></i>Schemas<span class="fa arrow"></span></a>
+      <ul class="nav nav-second-level">
+        <li ng-repeat="(schemaName, schemaDef) in sPanel.sidebar.schemas">
+          <a href="#/explore"><i class="fa fa-folder-open fa-fw"></i>{{schemaName}}<span class="fa arrow"></span></a>
+          <ul class="nav nav-third-level">
+            <li>
+              <a href="#/explore"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
+              <ul class="nav nav-fourth-level">
+                <li ng-repeat="(tableName, tableDef) in schemaDef.tables">
+                  <a href="#/explore" ng-click="sPanel.selectTable(tableDef.id)">
+                    <i class="fa fa-list fa-fw"></i>{{tableName}}<span class="fa arrow"></span>
+                  </a>
+                  <ul class="nav nav-fifth-level">
+                    <li>
+                      <a href="#/explore"><i class="fa fa-list fa-fw"></i>Triggers<span class="fa arrow"></span></a>
+                      <ul>
+                        <li ng-repeat="trigger in tableDef.triggers" my-finish-repeat="sidebar-finish-repeat">
+                          <a href="#/explore">{{trigger}}</a>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li> <!-- /tables -->
+
+            <li>
+              <a href="#/explore"><i class="fa fa-eye fa-fw"></i>Views<span class="fa arrow"></span></a>
+              <ul class="nav nav-third-level">
+                <li>
+                  <a href="#/explore"><i class="fa fa-column fa-fw"></i>Columns <span class="fa arrow"></span></a>
+                  <ul class="nav nav-fourth-level">
+                    <li>
+                      <a href="#/explore">Column 1</a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li> <!-- /views -->
+            
+            <li>
+              <a href="#/explore"><i class="fa fa-gears fa-fw"></i>Routines<span class="fa arrow"></span></a>
+              <ul class="nav nav-third-level">
+                <li>
+                  <a href="">Columns <span class="fa arrow"></span></a>
+                  <ul class="nav nav-fourth-level">
+                    <li>
+                      <a href="#">Column 1</a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li> <!-- /routines -->
+
+          </ul> <!-- schema -->
+        </li>
+      </ul>
+    </li> <!-- /schemas -->
+
+    <li>
+      <a href="#/explore"><i class="fa fa-users fa-fw"></i> Users</a>
+      <ul>
+        <li><a href="#">Foor</a></li>
+        <li><a href="#">Bar</a></li>
+      </ul>
+    </li> <!-- /users -->
+
+    <li>
+      <a href="#/explore"><i class="fa fa-files-o fa-fw"></i> Roles</a>
+    </li> <!-- /roles -->
+    
+    <li>
+      <a href="#/explore"><i class="fa fa-unlock-alt fa-fw"></i> Privileges</a>
+    </li> <!-- /privileges -->
+  </ul>
+  <!-- /#side-menu -->
+</div>

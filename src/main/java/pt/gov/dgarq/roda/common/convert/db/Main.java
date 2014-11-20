@@ -18,7 +18,7 @@ import pt.gov.dgarq.roda.common.convert.db.modules.db2.in.DB2JDBCImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.db2.out.DB2JDBCExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.dbml.in.DBMLImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.dbml.out.DBMLExportModule;
-import pt.gov.dgarq.roda.common.convert.db.modules.msAccess.in.MsAccessImportModule;
+import pt.gov.dgarq.roda.common.convert.db.modules.msAccess.in.MsAccessUCanAccessImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.in.MySQLJDBCImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.out.MySQLJDBCExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.mySql.out.PhpMyAdminExportModule;
@@ -27,6 +27,7 @@ import pt.gov.dgarq.roda.common.convert.db.modules.postgreSql.in.PostgreSQLJDBCI
 import pt.gov.dgarq.roda.common.convert.db.modules.postgreSql.out.PostgreSQLJDBCExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.siard.in.SIARDImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.siard.out.SIARDExportModule;
+import pt.gov.dgarq.roda.common.convert.db.modules.solr.out.EmbeddedSolrExportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.sqlServer.in.SQLServerJDBCImportModule;
 import pt.gov.dgarq.roda.common.convert.db.modules.sqlServer.out.SQLServerJDBCExportModule;
 
@@ -232,13 +233,22 @@ public class Main {
 						+ "Oracle12c import module: "
 						+ importModuleArgs.size());
 			}
-		} else if (importModuleArgs.get(0).equals("MSAccess")) {
+//		} else if (importModuleArgs.get(0).equals("MSAccess")) {
+//			if (importModuleArgs.size() == 2) {
+//				importModule = new MsAccessImportModule(new File(
+//						importModuleArgs.get(1)));
+//			} else {
+//				logger.error("Wrong argument number for "
+//						+ "MSAccess import module: " + importModuleArgs.size());
+//			}
+		} else if (importModuleArgs.get(0).equals("MSAccessUCanAccess")) {
 			if (importModuleArgs.size() == 2) {
-				importModule = new MsAccessImportModule(new File(
+				importModule = new MsAccessUCanAccessImportModule(new File(
 						importModuleArgs.get(1)));
 			} else {
 				logger.error("Wrong argument number for "
-						+ "MSAccess import module: " + importModuleArgs.size());
+						+ "MSAccessExp import module: "
+						+ importModuleArgs.size());
 			}
 //		} else if (importModuleArgs.get(0).equals("ODBC")) {
 //			if (importModuleArgs.size() == 2) {
@@ -397,6 +407,13 @@ public class Main {
 				logger.error("Wrong argument number for "
 						+ "SQLServerJDBC import module: "
 						+ exportModuleArgs.size());
+			}
+		} else if (exportModuleArgs.get(0).equalsIgnoreCase("EmbeddedSolr")) {
+			if (exportModuleArgs.size() == 1) {
+				exportModule = new EmbeddedSolrExportModule();
+			} else {
+				logger.error("Wrong argument number for "
+						+ "Solr export module: " + exportModuleArgs.size());
 			}
 //		} else if (exportModuleArgs.get(0).equals("SQLServerFile")) {
 //			if (exportModuleArgs.size() == 2) {

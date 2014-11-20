@@ -7,7 +7,7 @@
 	<version>2.0.0</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java_version>1.6</java_version>
+		<java_version>1.7</java_version>
 	</properties>
 	<build>
 		<plugins>
