@@ -363,6 +363,7 @@ public class JDBCImportModule implements DatabaseImportModule {
 					routine.setDescription("Procedure returns a result");
 				}
 			}
+			// TODO add parameters
 			routines.add(routine);
 		}		
 		return routines;

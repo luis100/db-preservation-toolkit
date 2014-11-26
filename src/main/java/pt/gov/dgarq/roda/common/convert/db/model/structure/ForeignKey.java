@@ -36,7 +36,15 @@ public class ForeignKey {
 	 * 
 	 */
 	public ForeignKey() {
-		
+		this.id = null;
+		this.name = null;
+		this.referencedSchema = null;
+		this.referencedTable = null;
+		this.references = new ArrayList<Reference>();
+		this.matchType = null;
+		this.deleteAction = null;
+		this.updateAction = null;
+		this.description = null;
 	}
 
 	/**

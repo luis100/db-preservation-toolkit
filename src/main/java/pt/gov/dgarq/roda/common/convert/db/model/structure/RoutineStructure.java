@@ -1,5 +1,6 @@
 package pt.gov.dgarq.roda.common.convert.db.model.structure;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,6 +31,13 @@ public class RoutineStructure {
 	 * 
 	 */
 	public RoutineStructure() {
+		this.name = null;
+		this.description = null;
+		this.source = null;
+		this.body = null;
+		this.characteristic = null;
+		this.returnType = null;
+		this.parameters = new ArrayList<Parameter>();
 	}
 
 

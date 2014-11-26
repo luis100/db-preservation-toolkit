@@ -9,3 +9,9 @@ src/test/
 
 log/
 exported-dbs/
+
+**/webapp/node_modules
+**/webapp/dist
+**/webapp/.tmp
+**/webapp/.sass-cache
+**/webapp/bower_components

@@ -16,6 +16,8 @@ public class Reference {
 	 * 
 	 */
 	public Reference() {
+		this.column = null;
+		this.referenced = null;
 	}
 	
 	/**

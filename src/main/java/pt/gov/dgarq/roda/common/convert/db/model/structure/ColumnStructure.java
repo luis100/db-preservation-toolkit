@@ -27,6 +27,13 @@ public class ColumnStructure {
 	 * 
 	 */
 	public ColumnStructure() {
+		this.id = null;
+		this.name = null;
+		this.folder = null;
+		this.type = null;
+		this.defaultValue = null;
+		this.nillable = null;
+		this.description = null;
 	}
 
 	

@@ -1,0 +1,22 @@
+{
+  "name": "webapp",
+  "version": "0.1.0",
+  "authors": [
+    "Miguel Coutada <michaelcoutada@gmail.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "angular": "1.2.x",
+    "jquery": "1.10.x",
+    "jquery-ui": "1.11.x",
+    "bootstrap": "~3.3.0",
+    "angular-route": "~1.2.x",
+    "angular-resource": "~1.2.x",
+    "metisMenu": "1.1.x",
+    "angular-bootstrap": "~0.12.0",
+    "components-font-awesome": "~4.2.0"
+  },
+  "resolutions": {
+    "angular-bootstrap": "~0.12.0"
+  }
+}
